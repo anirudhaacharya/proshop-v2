@@ -18,6 +18,7 @@ import {
   useGetProductDetailsQuery,
   useCreateReviewMutation,
 } from "../slices/productsApiSlice";
+import { useGetMyOrdersQuery } from "../slices/ordersApiSlice";
 import { addToCart } from "../slices/cartSlice";
 
 const ProductScreen = () => {
@@ -42,7 +43,22 @@ const ProductScreen = () => {
     error,
   } = useGetProductDetailsQuery(productId);
 
+  const {
+    data: orders,
+    isLoading: loadingOrder,
+    error: errorOrder,
+  } = useGetMyOrdersQuery();
+
   const { userInfo } = useSelector((state) => state.auth);
+
+  // Adding matchedOrder because only user who ordered the product can review the product
+  const matchedOrder = (orders || []).some(
+    (order) =>
+      order?.user === userInfo?._id &&
+      order?.isPaid === true && // Check payment status
+      (order?.orderItems || []).some((item) => item?.product === productId)
+  );
+
   const [createReview, { isLoading: loadingProductReview }] =
     useCreateReviewMutation();
   const submitHandler = async (e) => {
@@ -65,6 +81,12 @@ const ProductScreen = () => {
       <Link className="btn btn-light my-3" to="/">
         Go Back
       </Link>
+      {loadingOrder && <Loader />}
+      {errorOrder && (
+        <Message variant="danger">
+          {error?.data?.message || error.error}
+        </Message>
+      )}
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -169,7 +191,7 @@ const ProductScreen = () => {
                 <ListGroup.Item>
                   <h2>Write a Customer Review</h2>
                   {loadingProductReview && <Loader />}
-                  {userInfo ? (
+                  {userInfo && matchedOrder ? (
                     <Form onSubmit={submitHandler}>
                       <Form.Group className="my-2" controlId="rating">
                         <Form.Label>Rating</Form.Label>
@@ -205,6 +227,8 @@ const ProductScreen = () => {
                         Submit
                       </Button>
                     </Form>
+                  ) : userInfo ? (
+                    <Message>Please buy to write a review</Message>
                   ) : (
                     <Message>
                       Please <Link to="/login">sign in</Link> to write a review
