@@ -1,5 +1,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Order from "../models/orderModel.js";
+// // Updating product countInStock after order is paid
+// import Product from "../models/productModel.js"
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -72,6 +74,28 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (order) {
+    // // Updating product countInStock after order is paid
+    // // 1. Update product quantities in stock
+    // for (const item of order.orderItems) {
+    //   const product = await Product.findById(item.product);
+
+    //   if (product) {
+    //     // Check if there's enough stock
+    //     if (product.countInStock >= item.qty) {
+    //       product.countInStock -= item.qty;
+    //       await product.save();
+    //     } else {
+    //       res.status(400);
+    //       throw new Error(
+    //         `Not enough stock for ${product.name}. Available: ${product.countInStock}`
+    //       );
+    //     }
+    //   } else {
+    //     res.status(404);
+    //     throw new Error(`Product not found: ${item.product}`);
+    //   }
+    // }
+
     order.isPaid = true;
     order.paidAt = Date.now();
     order.paymentResult = {
