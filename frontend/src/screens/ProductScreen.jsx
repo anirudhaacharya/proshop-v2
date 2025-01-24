@@ -43,11 +43,7 @@ const ProductScreen = () => {
     error,
   } = useGetProductDetailsQuery(productId);
 
-  const {
-    data: orders,
-    isLoading: loadingOrder,
-    error: errorOrder,
-  } = useGetMyOrdersQuery();
+  const { data: orders } = useGetMyOrdersQuery();
 
   const { userInfo } = useSelector((state) => state.auth);
 
@@ -81,12 +77,7 @@ const ProductScreen = () => {
       <Link className="btn btn-light my-3" to="/">
         Go Back
       </Link>
-      {loadingOrder && <Loader />}
-      {errorOrder && (
-        <Message variant="danger">
-          {error?.data?.message || error.error}
-        </Message>
-      )}
+
       {isLoading ? (
         <Loader />
       ) : error ? (
